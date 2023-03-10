@@ -1,0 +1,26 @@
+---
+shm
+-- sh en/decoder for faster writing
+---
+Usage
+-- encode
+  >> ./encode < sh
+-- decode
+  >> ./decode < shm
+---
+What?
+-- shm encodes POSIX sh to shm and decodes shm to POSIX sh
+---- shm replaces some POSIX sh builtins with shorthands
+---- much like true & false have : & !
+---- shm can be written using only ASCII symbols
+---- but also features letter equivalents 
+---
+Dictionary
+-- :    -- true  | !    -- false
+-- ::/w -- while | !!/u -- until | %%/n -- done
+-- **/f -- for   | >:   -- in    | %/d  -- do
+-- :*/c -- case  | *:/s -- esac
+-- :-/r -- read
+-- -;/e -- echo  | -:/p -- printf
+-- ()/o -- EOF
+---

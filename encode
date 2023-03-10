@@ -1,0 +1,23 @@
+#!/bin/sh
+nl='
+'
+while IFS= read -r p || [ "$p" ]; do
+  IFS=" "; for i in $p; do # test
+    case "$i" in
+      '#')     break;;
+      'while') p="${p%%${i}*}w${p##*${i}}";;
+      'until') p="${p%%${i}*}u${p##*${i}}";;
+      'done')  p="${p%%${i}*}n${p##*${i}}";;
+      'for')   p="${p%%${i}*}f${p##*${i}}";;
+      'do')    p="${p%%${i}*}d${p##*${i}}" ;;
+      'in')    p="${p%%${i}*}>:${p##*${i}}";; # using a letter for in can cause issues
+      'case')  p="${p%%${i}*}c${p##*${i}}";;
+      'esac')  p="${p%%${i}*}s${p##*${i}}";;
+      'read')  p="${p%%${i}*}r${p##*${i}}" ;;
+      'echo')  p="${p%%${i}*}e${p##*${i}}" ;;
+      'printf')p="${p%%${i}*}p${p##*${i}}" ;;
+      'EOF')   p="${p%%${i}*}o${p##*${i}}";;
+    esac # default to letter shorthand to readability
+  done
+  printf '%s' "$p$nl"
+done
