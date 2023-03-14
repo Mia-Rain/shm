@@ -1,4 +1,9 @@
 #!/bin/sh
+# shellcheck disable=SC2166,SC2015
+# SC2015 is only an issue sometimes
+# SC2166 -a/-o has no proper replacement for [] && { } styling
+# as &&/|| are already being used -- for now -a/-o still work
+# possibly use syntax changes to avoid this by decoding to if 
 space=' '
 nl='
 '
@@ -9,7 +14,7 @@ foi(){ # checks if $1 is a valid builtin and returns it
     '%'|'d')           echo 'd'; return 0;;
     '<<')              echo '<'; return 0;;
     *';')              s=';'; unset oi; return 0;;
-    *)                 echo "$1"; return 0;;
+    *)                 echo "$1"; return 0;; # 
   esac
 }
 while IFS= read -r p || [ "$p" ]; do
@@ -17,20 +22,21 @@ while IFS= read -r p || [ "$p" ]; do
     case "$i" in
       '#')      break;;
       '::'|'w') 
-        [ ! "$oi" ] && p="${p%%${i}*}while${p##*${i}}"   ;; # while # $oi should be unset/empty or end with a ;
+        [ ! "$oi" ] && p="${p%%"${i}"*}while${p##*"${i}"}"   ;; # while # $oi should be unset/empty or end with a ;
       '!!'|'u') 
-        [ ! "$oi" ] && p="${p%%${i}*}until${p##*${i}}"   ;; # until # same as above
+        [ ! "$oi" ] && p="${p%%"${i}"*}until${p##*"${i}"}"   ;; # until # same as above
       '%%'|'n') 
-        [ ! "$oi" ] && p="${p%%${i}*}done${p##*${i}}"    ;; # done  # same as above
+        [ ! "$oi" ] && p="${p%%"${i}"*}done${p##*"${i}"}"    ;; # done  # same as above
       '**'|'f')
-        [ ! "$oi" -o ! "$doi" ] && p="${p%%${i}*}for${p##*${i}}";;# same as above
-      '>:') # in having a letter causes issues due to syntax -- TODO: change syntax for fix
+        [ ! "$oi" -o ! "$doi" ] && p="${p%%"${i}"*}for${p##*"${i}"}" && for=1;;# same as above
+      '>:'|'i') # in having a letter causes issues due to syntax -- TODO: change syntax for fix
         case "$p" in
-          *' >:') s=' '; p="${p%%${s}${i}*}${s}in${p##*${s}${i}}";;# $oi should be for/case
-          *' >: '*) 
+          *' '"$i") s=' '; p="${p%%"${s}${i}"*}${s}in${p##*"${s}${i}"}"; in=1;;
+          *' '"$i"' '*) 
           [ "$doi" = 'f' -o "$doi" = 'c' ] && {
             s=' '
-            p="${p%%${s}${i}${s}*}${s}in${s}${p##*${s}${i}${s}}"
+            p="${p%%"${s}${i}${s}"*}${s}in${s}${p##*"${s}${i}${s}"}"
+            in=1
           };;
         esac
         ;;
@@ -38,28 +44,28 @@ while IFS= read -r p || [ "$p" ]; do
         case "$p" in
           *' '"$i") [ ! "$doi" -o ! "$oi" ] && {
             s=' '
-            p="${p%%${s}${i}*}${s}do${p##*${s}${i}}"
+            p="${p%%"${s}${i}"*}${s}do${p##*"${s}${i}"}"
           };;
           *"$i"' '*) [ ! "$doi" -o ! "$oi" ] && {
             s=' '
-            p="${p%%${i}*}do${s}${p##*${i}${s}}"
+            p="${p%%"${i}"*}do${s}${p##*"${i}${s}"}"
           };;
-          "$i")    p="${p%%${i}*}do${p##*${i}}";;
+          "$i")    p="${p%%"${i}"*}do${p##*"${i}"}";;
         esac
        ;; # do    # $oi should be while/until/for
       ':*'|'c') 
-        [ ! "$oi" ] && p="${p%%${i}*}case${p##*${i}}";; # case  # $oi should be unset/empty or end with a ;
+        [ ! "$oi" ] && p="${p%%"${i}"*}case${p##*"${i}"}";; # case  # $oi should be unset/empty or end with a ;
       '*:'|'s')
         case "$p" in
-          *"$i"' '*) s=' '; [ ! "$oi" ] && p="${p%%${i}*}esac${s}${p##*${i}${s}}";;
-          "$i"|*"$i")      [ ! "$oi" ] && p="${p%%${i}*}esac${p##*${i}}";;
+          *"$i"' '*) s=' '; [ ! "$oi" ] && p="${p%%"${i}"*}esac${s}${p##*"${i}${s}"}";;
+          "$i"|*"$i")       [ ! "$oi" ] && p="${p%%"${i}"*}esac${p##*"${i}"}";;
         esac
         ;; # esac  # same as above
       ':-'|'r') 
-        [ ! "$oi" -o "$doi" = 'w' ] && p="${p%%${space}${i}${space}*}${space}read${space}${p##*${space}${i}${space}}";; # same as above or while/until(?)
+        [ ! "$oi" -o "$doi" = 'w' ] && p="${p%%"${space}${i}${space}"*}${space}read${space}${p##*"${space}${i}${space}"}";; # same as above or while/until(?)
       '-;'|'e')
         case "$p" in
-          *"$i"' '*) s=' '; p="${p%%${s}${i}${s}*}${s}echo${s}${p##*${s}${i}${s}}";; # $oi should be unset/empty or end with a ;
+          *"$i"' '*) s=' '; p="${p%%"${s}${i}${s}"*}${s}echo${s}${p##*"${s}${i}${s}"}";; # $oi should be unset/empty or end with a ;
         esac
         ;;
       '-:'|'p')
@@ -67,16 +73,19 @@ while IFS= read -r p || [ "$p" ]; do
           ''|'w')
             [ "$s" = ';' ] && s=' ' || unset s
             [ ! "$oi" ] && s=' '
-            p="${p%%${s}${i}${s}*}${s}printf${space}${p##*${s}${i}${space}}";;# same as above
+            p="${p%%"${s}${i}${s}"*}${s}printf${space}${p##*"${s}${i}${space}"}";;# same as above
         esac
         ;;
       '()'|'o')
         [ "$oi" ] && s=' ' || unset s
-        [ "$oi" = '<' -o ! "${s}" ] && p="${p%%${s}${i}*}${s}EOF${s}${p##*${s}${i}}" ;;# $oi MUSE be unset/empty or `<<` 
+        [ "$oi" = '<' -o ! "${s}" ] && p="${p%%"${s}${i}"*}${s}EOF${s}${p##*"${s}${i}"}" ;;# $oi MUSE be unset/empty or `<<` 
+      *) [ "$for" -a "$in" ] && {
+        p="${p%%"${doi}"*}${doi#$}${p##*"${doi}"}"
+      }
     esac
-    doi="$(foi $oi)"
-    oi="$(foi $i $oi)"   # set to the last valid builtin # TODO: check if $i is builtin # issues with PRINTF
+    doi="$(foi "$oi")"
+    oi="$(foi "$i" "$oi")"   # set to the last valid builtin # TODO: check if $i is builtin # issues with PRINTF
   done
-  unset oi doi
+  unset oi doi for in
   printf '%s' "$p$nl"
 done

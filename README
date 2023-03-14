@@ -18,9 +18,16 @@ What?
 Dictionary
 -- :    -- true  | !    -- false
 -- ::/w -- while | !!/u -- until | %%/n -- done
--- **/f -- for   | >:   -- in    | %/d  -- do
--- :*/c -- case  | *:/s -- esac
+-- **/f -- for   | >:/i -- in    | %/d  -- do
+-- :*/c -- case  | *:/s -- esac  
 -- :-/r -- read
 -- -;/e -- echo  | -:/p -- printf
 -- ()/o -- EOF
+---
+Syntax changes
+-- shm applies some syntax changes, they are as follows
+---- for:
+  >> for i in  -- incorrect
+  >> for $i in -- correct
+  >>>> this change allows for i to replace in
 ---
