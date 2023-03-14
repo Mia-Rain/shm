@@ -17,8 +17,8 @@ What?
 ---
 Dictionary
 -- :    -- true  | !    -- false
--- ::/w -- while | !!/u -- until | %%/n -- done
--- **/f -- for   | >:/i -- in    | %/d  -- do
+-- ::/w -- while | !!/u -- until | ;;/n -- done
+-- **/f -- for   | >:/i -- in    | ;/d  -- do
 -- :*/c -- case  | *:/s -- esac  
 -- :-/r -- read
 -- -;/e -- echo  | -:/p -- printf
