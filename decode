@@ -22,16 +22,16 @@ while IFS= read -r p || [ "$p" ]; do
     case "$i" in
       '#')      break;;
       '::'|'w') 
-        [ ! "$oi" ] && p="${p%%"${i}"*}while${p##*"${i}"}"; d=1;; # while # $oi should be unset/empty or end with a ;
+        [ ! "$oi" ] && p="${p%%"${i}"*}while${p##*"${i}"}"; d=1 ;; # while # $oi should be unset/empty or end with a ;
       '!!'|'u') 
-        [ ! "$oi" ] && p="${p%%"${i}"*}until${p##*"${i}"}"; d=1;; # until # same as above
-      ';;'|'n') 
-        [ ! "$oi" ] && p="${p%%"${i}"*}done${p##*"${i}"}";; # done  # same as above
+        [ ! "$oi" ] && p="${p%%"${i}"*}until${p##*"${i}"}"; d=1 ;;
+      ';;'|'n')
+      [ ! "$oi" ] && p="${p%%"${i}"*}done${p##*"${i}"}" ;; # done  # same as above
       '**'|'f')
-        [ ! "$oi" -o ! "$doi" ] && p="${p%%"${i}"*}for${p##*"${i}"}" && f=1; d=1;;# same as above
+      [ ! "$oi" -o ! "$doi" ] && p="${p%%"${i}"*}for${p##*"${i}"}" && f=1; d=1 ;; # same as above
       '>:'|'i')
         case "$p" in
-          *' '"$i") s=' '; p="${p%%"${s}${i}"*}${s}in${p##*"${s}${i}"}"; in=1;;
+          *' '"$i") s=' '; p="${p%%"${s}${i}"*}${s}in${p##*"${s}${i}"}"; in=1 ;;
           *' '"$i"' '*) 
           [ "$doi" = 'f' -o "$doi" = 'c' ] && {
             s=' '
@@ -64,7 +64,7 @@ while IFS= read -r p || [ "$p" ]; do
         esac
         ;; # esac  # same as above
       ':-'|'r') 
-        [ ! "$oi" -o "$doi" = 'w' ] && p="${p%%"${space}${i}${space}"*}${space}read${space}${p##*"${space}${i}${space}"}";; # same as above or while/until(?)
+        [ ! "$oi" -o "${doi:-$oi}" = 'w' ] && p="${p%%"${space}${i}${space}"*}${space}read${space}${p##*"${space}${i}${space}"}";; # same as above or while/until(?)
       '-;'|'e')
         case "$p" in
           *"$i"' '*) s=' '; p="${p%%"${s}${i}${s}"*}${s}echo${s}${p##*"${s}${i}${s}"}";; # $oi should be unset/empty or end with a ;
