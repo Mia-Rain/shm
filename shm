@@ -1,0 +1,48 @@
+#!/bin/sh
+# setting $shm_path is required ...
+sh=$(command -v dash); sh="${sh:-$(command -v bash)}" 
+# testing is done in dash, however bash should be compatible 90% of the time
+case "$@" in
+  *' -i '*|*' -i'*) write=0;;
+esac
+# add -i to decode to a file
+read -r p < $1
+[ "${p##*shm}shm" = 'shm' ] && { # script is shm code
+  in=$(n=0; while IFS= read -r p || [ "$p" ]; do
+    [ "$n" -eq 0 -a "${p%%#!*}#!" = "#!" ] && {
+      [ "$write" ] && {
+        printf '#!/bin/sh\n'
+      }
+    } || printf '%s\n' "$p"
+    : $((n+=1))
+  done << EOF
+$(while IFS= read -r p || [ "$p" ]; do
+  printf '%s\n' "$p"
+done < $1)
+EOF
+  ) 
+  [ "$write" ] && { 
+    [ "$1" != "${1%.shm}" ] && printf '%s\n' "$in" | ${shm_path:-~git/shm}/decode > ${1%.shm}
+  } || {
+    printf '%s\n' "$in" | ${shm_path:-~git/shm}/decode
+  }
+} || { # script is sh code 
+  in=$(n=0; while IFS= read -r p || [ "$p" ]; do
+    [ "$n" -eq 0 -a "${p%%#!*}#!" = "#!" ] && {
+      [ "$write" ] && {
+        printf '#!/usr/bin/env shm\n'
+      }
+    } || printf '%s\n' "$p"
+    : $((n+=1))
+  done << EOF
+$(while IFS= read -r p || [ "$p" ]; do
+  printf '%s\n' "$p"
+done < $1)
+EOF
+  ) 
+  [ "$write" ] && { 
+    printf '%s\n' "$in" | ${shm_path:-~git/shm}/encode > ${1%.sh}.shm
+  } || {
+    printf '%s\n' "$in" | ${shm_path:-~git/shm}/encode
+  }
+}

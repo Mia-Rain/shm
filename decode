@@ -13,12 +13,18 @@ foi(){ # checks if $1 is a valid builtin and returns it
     'w'|'::'|'!!'|'u') echo 'w'; return 0;;
     '%'|'d')           echo 'd'; return 0;;
     '<<')              echo '<'; return 0;;
-    *';')              s=';'; unset oi; return 0;;
+    *';'|*'||'|*'&&')              s=';'; unset oi; return 0;;
     *)                 echo "$1"; return 0;; # 
   esac
 }
 while IFS= read -r p || [ "$p" ]; do
   IFS=" "; for i in $p; do
+    [ "${i#\$(}" != "$i" ] && {
+      i="${i#'$('}"
+    }
+    [ "${i%)}" != "$i" ] && {
+      i="${i%)}"
+    }
     case "$i" in
       '#')      break;;
       '::'|'w') 
@@ -64,7 +70,11 @@ while IFS= read -r p || [ "$p" ]; do
         esac
         ;; # esac  # same as above
       ':-'|'r') 
-        [ ! "$oi" -o "${doi:-$oi}" = 'w' ] && p="${p%%"${space}${i}${space}"*}${space}read${space}${p##*"${space}${i}${space}"}";; # same as above or while/until(?)
+        case "$p" in
+          *' '"$i"' '*) s=' ';;
+          *) unset s
+        esac
+        [ ! "$oi" -o "${doi:-$oi}" = 'w' ] && p="${p%%"${s}${i}${space}-r${space}"*}${s}read${space}-r${space}${p##*"${s}${i}${space}-r${space}"}";; # same as above or while/until(?)
       '-;'|'e')
         case "$p" in
           *"$i"' '*) s=' '; p="${p%%"${s}${i}${s}"*}${s}echo${s}${p##*"${s}${i}${s}"}";; # $oi should be unset/empty or end with a ;
@@ -80,7 +90,7 @@ while IFS= read -r p || [ "$p" ]; do
         ;;
       '()'|'o')
         [ "$oi" ] && s=' ' || unset s
-        [ "$oi" = '<' -o ! "${s}" ] && p="${p%%"${s}${i}"*}${s}EOF${s}${p##*"${s}${i}"}" ;;# $oi MUSE be unset/empty or `<<` 
+        [ "$oi" = '<' -o ! "${s}" ] && p="${p%%"${s}${i}"*}${s}EOF${p##*"${s}${i}"}" ;;# $oi MUSE be unset/empty or `<<` 
       *) [ "$f" -a "$in" ] && {
         p="${p%%"${doi}"*}${doi#$}${p##*"${doi}"}"
       };;

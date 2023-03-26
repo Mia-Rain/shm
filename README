@@ -7,6 +7,15 @@ Usage
   >> ./encode < sh
 -- decode
   >> ./decode < shm
+-- shebang
+  >> #!/usr/bin/env shm 
+  >>>> ./shm will auto decode shm code
+  >>>> add -i to write output to ${file%.shm}
+  >>>>>> write will fail if original file is same as ${file%.shm}
+  >>>> ./shm will also auto encode shell code
+  >>>>>> ALWAYS check en/decoded code before use
+  >>>>>> NO code is ever perfect, and shm certainly isn't either
+  >>>>>>>> ./shm does not work with STDIN ...
 ---
 What?
 -- shm encodes POSIX sh to shm and decodes shm to POSIX sh
@@ -30,4 +39,13 @@ Syntax changes
   >> for i in  -- incorrect
   >> for $i in -- correct
   >>>> this change allows for i to replace in
+---- read:
+  >> read REQUIRES -r
+  >> read -r   -- correct
+  >>>> this is due to issues with -r matching r
+  >>>> expecting -r fixes this & -r should always be used
+---
+Caveats
+-- lines MUST not have trailing white-space
+---
 ---
