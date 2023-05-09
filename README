@@ -44,6 +44,9 @@ Syntax changes
   >> read -r   -- correct
   >>>> this is due to issues with -r matching r
   >>>> expecting -r fixes this & -r should always be used
+---- functions:
+  >> functions should NOT be a single letter
+  >>>> this is to prevent calling functions from colliding with shm
 ---
 Caveats
 -- lines MUST not have trailing white-space
