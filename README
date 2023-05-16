@@ -48,7 +48,32 @@ Syntax changes
   >> functions should NOT be a single letter
   >>>> this is to prevent calling functions from colliding with shm
 ---
+Style
+-- below are suggestions for coding style
+---- they are not currently enforced but could be in the future
+  >> following them is highly recommended
+---- case:
+  >> item)  -- incorrect
+  >> (item) -- correct
+  >>>> (item) ...    -- incorrect
+  >>>> (item) ...;;  -- correct
+  >>>> all lines in case should end with ;;
+  >>>> however there must /NOT/ be a space before ;;
+---- comments:
+  >> item # ... -- incorrect
+  >> item
+     # ...      -- correct
+  >>>> this is a very recent change, existing code might not follow
+  >>>> comments always refer to the line above
+  >>>>>> unless an arrow is present
+---- functions: 
+  >> func()
+     {          -- incorrect
+  >> func() {   -- correct
+---- if:
+  >> make use of &&/|| unless if makes more sense
+  >> do not use if without a reason
+---
 Caveats
 -- lines MUST not have trailing white-space
----
 ---
