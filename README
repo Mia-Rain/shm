@@ -47,6 +47,20 @@ Syntax changes
 ---- functions:
   >> functions should NOT be a single letter
   >>>> this is to prevent calling functions from colliding with shm
+---- piping:
+  >> DO NOT pipe into a loop; use EOF/heredocs instead
+  >>>> if you do pipe into a loop, shm will not catch it!
+---
+Decoding changes
+-- as a compiler of sorts, shm may create optimizations or improvements
+-- they are as follows
+---- e/echo
+  >> e "$item"
+  >>>> will not actually produce an echo(1) call
+  >>>> instead converts to printf(1) call
+  >>>> this prevents issues with echo compatibility
+  >>>>>> but may cause issues due to printf options
+  >>>>>> YMMV; idc
 ---
 Style
 -- below are suggestions for coding style

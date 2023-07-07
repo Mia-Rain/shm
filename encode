@@ -2,8 +2,9 @@
 nl='
 '
 space=' '
-while IFS= read -r p || [ "$p" ]; do
-  IFS=" "; for i in $p; do # test
+n=0; while IFS= read -r p || [ "$p" ]; do
+  [ "$n" -eq 0 -a "$p" = "#!/bin/sh" ] && p="#!/usr/bin/env shm" 
+  IFS=" "; for i in $p; do
     [ "${i#\$(}" != "$i" ] && {
       i="${i#'$('}"
     }
@@ -17,7 +18,9 @@ while IFS= read -r p || [ "$p" ]; do
       'done')  p="${p%%"${i}"*}n${p##*"${i}"}";;
       'for')   p="${p%%"${i}"*}f${p##*"${i}"}"; for=1;;
       'do')    p="${p%%"${i}"*}d${p##*"${i}"}";;
-      'in')    p="${p%%"${i}"*}i${p##*"${i}"}";; # using a letter for in can cause issues
+      'in')    p="${p%%"${i}"*}i${p##*"${i}"}";;
+      # using a letter for in can cause issues
+      # this is solved with syntax changes; see README
       'case')  p="${p%%"${i}"*}c${p##*"${i}"}";;
       'esac')  p="${p%%"${i}"*}s${p##*"${i}"}";;
       'read')  p="${p%%"${i}"*}r${p##*"${i}"}";;
@@ -32,4 +35,5 @@ while IFS= read -r p || [ "$p" ]; do
   done
   unset for sub esub
   printf '%s' "$p$nl"
+  : $((n+=1))
 done

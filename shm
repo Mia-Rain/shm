@@ -1,12 +1,23 @@
 #!/bin/sh
 # setting $shm_path is required ...
-sh=$(command -v dash); sh="${sh:-$(command -v bash)}" 
+# however the default path is ~git/shm
+# that is the shm path in the home path of the git user
+sh="${sh:-$(command -v dash)}"; sh="${sh:-$(command -v bash)}" 
 # testing is done in dash, however bash should be compatible 90% of the time
+# additional shells can be used by setting $sh; however I cannot vouch for their support
 case "$@" in
   *' -i '*|*' -i'*) write=0;;
 esac
 # add -i to decode to a file
-read -r p < $1
+[ "$2" = "-i" -a ! -f "./-i" ] && set -- $2 $1
+# only up 2 arguments are supported
+# defaults to reading from $2 to allow for options to come before file
+# however if an option is given as $2 the above will try to adjust $@ to the proper format
+[ -f "/etc/shm" ] && . /etc/shm
+[ -f "${XDG_CONFIG_HOME:-$HOME/.config/}/shm" ] && . "${XDG_CONFIG_HOME:-$HOME/.config/}"/shm
+# attempts to source a config file if found
+read -r p < ${2:-$1}
+# should no options be given $2 should be empty, use $1 in this case
 [ "${p##*shm}shm" = 'shm' ] && { # script is shm code
   in=$(n=0; while IFS= read -r p || [ "$p" ]; do
     [ "$n" -eq 0 -a "${p%%#!*}#!" = "#!" ] && {

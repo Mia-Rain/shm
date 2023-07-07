@@ -77,7 +77,7 @@ while IFS= read -r p || [ "$p" ]; do
         [ ! "$oi" -o "${doi:-$oi}" = 'w' ] && p="${p%%"${s}${i}${space}-r${space}"*}${s}read${space}-r${space}${p##*"${s}${i}${space}-r${space}"}";; # same as above or while/until(?)
       '-;'|'e')
         case "$p" in
-          *"$i"' '*) s=' '; p="${p%%"${s}${i}${s}"*}${s}echo${s}${p##*"${s}${i}${s}"}";; # $oi should be unset/empty or end with a ;
+          *"$i"' '*) s=' '; p="${p%%"${s}${i}${s}"*}${s}printf '%s\n'${s}${p##*"${s}${i}${s}"}";; # $oi should be unset/empty or end with a ;
         esac
         ;;
       '-:'|'p')
