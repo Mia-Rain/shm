@@ -1,7 +1,141 @@
 #!/bin/sh
-# setting $shm_path is required ...
-# however the default path is ~git/shm
-# that is the shm path in the home path of the git user
+space=' '
+nl='
+'
+foi(){ # checks if $1 is a valid builtin and returns it
+  case "$1" in
+    'f'|'**'|'c'|':*') echo 'c'; return 0;;
+    'w'|'::'|'!!'|'u') echo 'w'; return 0;;
+    '%'|'d')           echo 'd'; return 0;;
+    '<<')              echo '<'; return 0;;
+    *';'|*'||'|*'&&')              s=';'; unset oi; return 0;;
+    *)                 echo "$1"; return 0;; # 
+  esac
+}
+decode() {
+  while IFS= read -r p || [ "$p" ]; do
+    IFS=" "; for i in $p; do
+      [ "${i#\$(}" != "$i" ] && {
+        i="${i#'$('}"
+      }
+      [ "${i%)}" != "$i" ] && {
+        i="${i%)}"
+      }
+      case "$i" in
+        '#')
+          break;;
+        '::'|'w') 
+          [ ! "$oi" ] && p="${p%%"${i}"*}while${p##*"${i}"}"; d=1 ;; # while # $oi should be unset/empty or end with a ;
+        '!!'|'u') 
+          [ ! "$oi" ] && p="${p%%"${i}"*}until${p##*"${i}"}"; d=1 ;;
+        ';;'|'n')
+          [ ! "$oi" ] && p="${p%%"${i}"*}done${p##*"${i}"}" ;; # done  # same as above
+        '**'|'f')
+          [ ! "$oi" -o ! "$doi" ] && p="${p%%"${i}"*}for${p##*"${i}"}" && f=1; d=1 ;; # same as above
+        '>:'|'i')
+          case "$p" in
+            *' '"$i") s=' '; p="${p%%"${s}${i}"*}${s}in${p##*"${s}${i}"}"; in=1 ;;
+            *' '"$i"' '*) 
+            [ "$doi" = 'f' -o "$doi" = 'c' ] && {
+              s=' '
+              p="${p%%"${s}${i}${s}"*}${s}in${s}${p##*"${s}${i}${s}"}"
+              in=1
+            };;
+          esac
+          ;;
+        ';'|'d')
+          case "$p" in
+            *' '"$i") [ ! "$doi" -o ! "$oi" -a "$d" ] && {
+              s=' '
+              p="${p%%"${s}${i}"*}${s}do${p##*"${s}${i}"}"
+              unset d
+            };;
+            *"$i"' '*) [ ! "$doi" -o ! "$oi" -a "$d" ] && {
+              s=' '
+              p="${p%%"${i}"*}do${s}${p##*"${i}${s}"}"
+              unset d
+            };;
+            "$i")    p="${p%%"${i}"*}do${p##*"${i}"}";;
+          esac
+        ;; # do    # $oi should be while/until/for
+        ':*'|'c') 
+          [ ! "$oi" ] && p="${p%%"${i}"*}case${space}${p##*"${i}"${space}}";; # case  # $oi should be unset/empty or end with a ;
+        '*:'|'s')
+          case "$p" in
+            *"$i"' '*) s=' '; [ ! "$oi" ] && p="${p%%"${i}"*}esac${s}${p##*"${i}${s}"}";;
+            "$i"|*"$i")       [ ! "$oi" ] && p="${p%%"${i}"*}esac${p##*"${i}"}";;
+          esac
+          ;; # esac  # same as above
+        ':-'|'r') 
+          case "$p" in
+            *' '"$i"' '*) s=' ';;
+            *) unset s
+          esac
+          [ ! "$oi" -o "${doi:-$oi}" = 'w' ] && p="${p%%"${s}${i}${space}-r${space}"*}${s}read${space}-r${space}${p##*"${s}${i}${space}-r${space}"}";; # same as above or while/until(?)
+        '-;'|'e')
+          case "$p" in
+            *"$i"' '*) s=' '; p="${p%%"${s}${i}${s}"*}${s}printf '%s\n'${s}${p##*"${s}${i}${s}"}";; # $oi should be unset/empty or end with a ;
+          esac
+          ;;
+        '-:'|'p')
+          case "$oi" in
+            ''|'w')
+              [ "$s" = ';' ] && s=' ' || unset s
+              [ ! "$oi" ] && s=' '
+              p="${p%%"${s}${i}${s}"*}${s}printf${space}${p##*"${s}${i}${space}"}";;# same as above
+          esac
+          ;;
+        '()'|'o')
+          [ "$oi" ] && s=' ' || unset s
+          [ "$oi" = '<' -o ! "${s}" ] && p="${p%%"${s}${i}"*}${s}EOF${p##*"${s}${i}"}" ;;# $oi MUSE be unset/empty or `<<` 
+        *) [ "$f" -a "$in" ] && {
+          p="${p%%"${doi}"*}${doi#$}${p##*"${doi}"}"
+        };;
+      esac
+      doi="$(foi "$oi")"
+      oi="$(foi "$i" "$oi")"   # set to the last valid builtin # TODO: check if $i is builtin # issues with PRINTF
+    done
+    unset oi doi f in d
+    printf '%s' "$p$nl"
+  done
+}
+encode() {
+  n=0; while IFS= read -r p || [ "$p" ]; do
+    [ "$n" -eq 0 -a "$p" = "#!/bin/sh" ] && p="#!/usr/bin/env shm"
+    IFS=" "; for i in $p; do
+      [ "${i#\$(}" != "$i" ] && {
+        i="${i#'$('}"
+      }
+      [ "${i%)}" != "$i" ] && {
+        i="${i%)}"
+      }
+      case "${i}" in
+        '#')     break;;
+        'while') p="${p%%"${i}"*}w${p##*"${i}"}";;
+        'until') p="${p%%"${i}"*}u${p##*"${i}"}";;
+        'done')  p="${p%%"${i}"*}n${p##*"${i}"}";;
+        'for')   p="${p%%"${i}"*}f${p##*"${i}"}"; for=1;;
+        'do')    p="${p%%"${i}"*}d${p##*"${i}"}";;
+        'in')    p="${p%%"${i}"*}i${p##*"${i}"}";;
+        # using a letter for in can cause issues
+        # this is solved with syntax changes; see README
+        'case')  p="${p%%"${i}"*}c${p##*"${i}"}";;
+        'esac')  p="${p%%"${i}"*}s${p##*"${i}"}";;
+        'read')  p="${p%%"${i}"*}r${p##*"${i}"}";;
+        'echo')  p="${p%%"${i}"*}e${p##*"${i}"}";;
+        'printf')p="${p%%"${i}"*}p${p##*"${i}"}";;
+        'EOF')   p="${p%%"${i}"*}o${p##*"${i}"}";;
+        *) [ "$for" ] && {
+          p="${p%%"${i}"*}${i:+\$"$i"}${space}${p##*"${i}${space}"}"
+          unset for # this solves previous issues with in
+        } ;;
+      esac # default to letter shorthand to readability
+    done
+    unset for sub esub
+    printf '%s' "$p$nl"
+    : $((n+=1))
+  done
+}
 sh="${sh:-$(command -v dash)}"; sh="${sh:-$(command -v bash)}" 
 # testing is done in dash, however bash should be compatible 90% of the time
 # additional shells can be used by setting $sh; however I cannot vouch for their support
@@ -33,9 +167,9 @@ done < $1)
 EOF
   ) 
   [ "$write" ] && { 
-    [ "$1" != "${1%.shm}" ] && printf '%s\n' "$in" | ${shm_path:-~git/shm}/decode > ${1%.shm}
+    [ "$1" != "${1%.shm}" ] && printf '%s\n' "$in" | decode > ${1%.shm}
   } || {
-    printf '%s\n' "$in" | ${shm_path:-~git/shm}/decode
+    printf '%s\n' "$in" | decode
   }
 } || { # script is sh code 
   in=$(n=0; while IFS= read -r p || [ "$p" ]; do
@@ -52,8 +186,8 @@ done < $1)
 EOF
   ) 
   [ "$write" ] && { 
-    printf '%s\n' "$in" | ${shm_path:-~git/shm}/encode > ${1%.sh}.shm
+    printf '%s\n' "$in" | encode > ${1%.sh}.shm
   } || {
-    printf '%s\n' "$in" | ${shm_path:-~git/shm}/encode
+    printf '%s\n' "$in" | encode
   }
 }
