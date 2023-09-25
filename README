@@ -2,11 +2,18 @@
 shm
 -- sh en/decoder for faster writing
 ---
+Plans
+-- there are plans to give shm additional input "langs"
+---- to sort of make shm interchangeable, and easily reusable
+---- with a configuration system
+---- but also to make a tangent type lang; 
+---- and i feel like reusing the base here is a better idea
+---
 Usage
 -- encode
-  >> ./encode < sh
+  >> ./shm ./sh
 -- decode
-  >> ./decode < shm
+  >> ./shm ./shm
 -- shebang
   >> #!/usr/bin/env shm 
   >>>> ./shm will auto decode shm code

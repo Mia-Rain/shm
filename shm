@@ -158,7 +158,11 @@ read -r p < ${2:-$1}
       [ "$write" ] && {
         printf '#!/bin/sh\n'
       }
-    } || printf '%s\n' "$p"
+    } || {
+      [ "${p##*shm}shm" = 'shm' ] && {
+        printf '#!/bin/sh\n'
+      } || printf '%s\n' "$p"
+    }
     : $((n+=1))
   done << EOF
 $(while IFS= read -r p || [ "$p" ]; do
