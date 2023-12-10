@@ -2,12 +2,10 @@
 shm
 -- sh en/decoder for faster writing
 ---
-Plans
--- there are plans to give shm additional input "langs"
----- to sort of make shm interchangeable, and easily reusable
----- with a configuration system
----- but also to make a tangent type lang; 
----- and i feel like reusing the base here is a better idea
+Deprecated
+-- shm is deprecated in favor of milang
+-- projects in shm should continue in pure sh
+-- until mios/milang reach alpha
 ---
 Usage
 -- encode
